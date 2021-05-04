@@ -20,6 +20,9 @@ using System.Text;
 using EComerence.Infrastructure.Mappers;
 using Microsoft.Extensions.Options;
 using ChatApp.Infrastructure.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using SignalRServer.Hubs;
 
 namespace ChatApp.Api
 {
@@ -36,14 +39,23 @@ namespace ChatApp.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AplicationDbContext>();
+            services.AddAuthorization();
             services.AddScoped<DbContext, AplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConnectionRepository, ConnectionRepository>();
-            services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddSingleton<IJwtHandler, JwtHandler>();
             services.AddSingleton(AutoMapperConfig.Initialize());
+            services.AddMvc(options => options.EnableEndpointRouting = false);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
 
             services.AddAuthentication
                 (o =>
@@ -71,12 +83,16 @@ namespace ChatApp.Api
                                   builder =>
                                   {
                                       builder.WithOrigins("http://localhost:3000",
-                                                          "https://localhost:3000")
-                                                            .AllowAnyHeader()
-                                                        .AllowAnyMethod()
-                                                        .AllowCredentials();
+                                                          "https://localhost:3000",
+                                                          "null",
+                                                          "https://gourav-d.github.io/SignalR-Web-Client/dist/")
+                                             .AllowAnyHeader()
+                                             .AllowAnyMethod()
+                                             .AllowCredentials();
                                   });
             });
+
+            services.AddSignalR();
 
             services.AddSwaggerGen(c =>
             {
@@ -122,15 +138,10 @@ namespace ChatApp.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+            
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseRouting();
             db.Database.Migrate();
 
@@ -142,6 +153,10 @@ namespace ChatApp.Api
                 c.DocumentTitle = "Title Documentation";
                 c.DocExpansion(DocExpansion.None);
 
+            });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<ChatHub>("/chatHub");
             });
             app.UseAuthentication();
             app.UseMvcWithDefaultRoute();
