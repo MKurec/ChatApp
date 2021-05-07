@@ -8,7 +8,11 @@ export const getters = {
   loggedInUser(state) {
     return state.auth.user
   },
-    connection(connection) {
+    
+}
+export const mutations = {
+
+  connection(connection) {
     if (connection === null) {
       connection = new HubConnectionBuilder()
         .withUrl("https://localhost:44387/chatHub")

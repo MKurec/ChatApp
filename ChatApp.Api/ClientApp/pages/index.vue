@@ -115,14 +115,8 @@ import { HubConnectionBuilder, HubConnectionState } from "@microsoft/signalr";
 
 const signalR = require("@microsoft/signalr");
 
-
 export default {
-  props: {
-    connection: {
-      type: Object,
-      default: () => {},
-    },
-  },
+  props: {},
   data: () => {
     return {
       password: "Password",
@@ -131,6 +125,7 @@ export default {
       marker: true,
       dialog: false,
       name: "",
+      connection: null,
       users: [],
       userMessage: "",
       messages: [],
@@ -184,7 +179,7 @@ export default {
       });
     },
     listen() {
-     // window.console.log("Listen Started");
+      console.log("Listen Started");
       this.connection.on("NewConnection", (res) => {
         console.log(res);
       });
@@ -202,10 +197,15 @@ export default {
         console.log(res);
       });
     },
+    getUsers: async function() {
+    let users = await this.$axios.$get("/api/Users/Users/");
+    this.users= users
   },
+  },
+  
   created() {
-    if (this.connection === null) {
-      this.connection = new HubConnectionBuilder()
+    if (this.connection == null) {
+      this.connection =  new HubConnectionBuilder()
         .withUrl("https://localhost:44387/chatHub")
         .build();
     }
@@ -213,7 +213,8 @@ export default {
       .start()
       .then(() => {
         console.log("Connection Success");
-        this.listen();
+        this.listen(),
+        this.getUsers();
       })
       .catch((err) => {
         console.log(`Connection Error ${err}`);
@@ -223,9 +224,7 @@ export default {
     });
   },
 
-  async fetch() {
-    this.users = await this.$axios.$get("/api/Users/Users/");
-  },
+  
   middleware: "auth",
 };
 </script>
