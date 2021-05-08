@@ -39,7 +39,7 @@
 
         <v-list subheader>
           <v-subheader>Previous chats</v-subheader>
-          <v-list-item-group v-model="selectedItem" color="primary">
+          <v-list-item-group v-model="selectedUser" color="primary">
             <v-list-item v-for="user in users" :key="user.id">
               <v-list-item-avatar>
                 <v-img
