@@ -39,24 +39,25 @@
 
         <v-list subheader>
           <v-subheader>Previous chats</v-subheader>
+          <v-list-item-group v-model="selectedItem" color="primary">
+            <v-list-item v-for="user in users" :key="user.id">
+              <v-list-item-avatar>
+                <v-img
+                  :alt="`${user.name} avatar`"
+                  src="https://cdn.vuetifyjs.com/images/lists/1.jpg"
+                ></v-img>
+              </v-list-item-avatar>
 
-          <v-list-item v-for="user in users" :key="user.id">
-            <v-list-item-avatar>
-              <v-img
-                :alt="`${user.name} avatar`"
-                src="https://cdn.vuetifyjs.com/images/lists/1.jpg"
-              ></v-img>
-            </v-list-item-avatar>
-
-            <v-list-item-content>
-              <v-list-item-title v-text="user.name"></v-list-item-title>
-            </v-list-item-content>
-            <v-list-item-icon>
-              <v-icon :color="activechat ? 'deep-purple accent-4' : 'grey'">
-                mdi-message-outline
-              </v-icon>
-            </v-list-item-icon>
-          </v-list-item>
+              <v-list-item-content>
+                <v-list-item-title v-text="user.name"></v-list-item-title>
+              </v-list-item-content>
+              <v-list-item-icon>
+                <v-icon :color="activechat ? 'deep-purple accent-4' : 'grey'">
+                  mdi-message-outline
+                </v-icon>
+              </v-list-item-icon>
+            </v-list-item>
+          </v-list-item-group>
         </v-list>
       </v-col>
       <v-col>
@@ -172,22 +173,10 @@ export default {
     openDialog() {
       this.dialog = true;
     },
-    joinRoom() {
-      this.dialog = false;
-      this.connection.invoke("JoinRoom", this.name).catch(function (err) {
-        return console.error(err);
-      });
-    },
     listen() {
       console.log("Listen Started");
-      this.connection.on("NewConnection", (res) => {
+      this.connection.on("OnConnectedAsync", (res) => {
         console.log(res);
-      });
-      this.connection.on("JoinRoom", (res) => {
-        var userObj = {
-          name: res,
-        };
-        this.users.push(userObj);
       });
       this.connection.on("SendMessage", (res) => {
         var messageObj = {
@@ -197,24 +186,27 @@ export default {
         console.log(res);
       });
     },
-    getUsers: async function() {
-    let users = await this.$axios.$get("/api/Users/Users/");
-    this.users= users
+    getUsers: async function () {
+      let users = await this.$axios.$get("/api/Users/Users/");
+      this.users = users;
+    },
   },
-  },
-  
+
   created() {
     if (this.connection == null) {
-      this.connection =  new HubConnectionBuilder()
-        .withUrl("https://localhost:44387/chatHub")
+      console.log(this.$auth.strategy.token.get().substring(7));
+      this.connection = new HubConnectionBuilder()
+        .withUrl("https://localhost:44387/chatHub", {
+          accessTokenFactory: () =>
+            this.$auth.strategy.token.get().substring(7),
+        })
         .build();
     }
     this.connection
       .start()
       .then(() => {
         console.log("Connection Success");
-        this.listen(),
-        this.getUsers();
+        this.listen(), this.getUsers();
       })
       .catch((err) => {
         console.log(`Connection Error ${err}`);
@@ -224,7 +216,6 @@ export default {
     });
   },
 
-  
   middleware: "auth",
 };
 </script>

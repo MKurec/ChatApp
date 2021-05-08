@@ -2,14 +2,19 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SignalRServer.Hubs
 {
+    
     public class ChatHub : Hub
     {
+
+        [Authorize]
         public override Task OnConnectedAsync()
         {
-            Console.WriteLine("New Connection Started: " + Context.ConnectionId);
+            string name = Context.User.Identity.Name;
+            Console.WriteLine("New Connection Started: " + Context.ConnectionId + " with user: " + name);
           //  Clients.All.SendAsync("NewConnection", "New Connection Successfull", Context.ConnectionId);
             return base.OnConnectedAsync();
         }
@@ -24,7 +29,7 @@ namespace SignalRServer.Hubs
         public async Task SendMessage(string message)
         {
             Console.WriteLine("Message received");
-            await Clients.All.SendAsync("SendMessage", message);
+            await Clients.Client(Context.ConnectionId).SendAsync("SendMessage", message);
         }
 
         public async Task JoinRoom(string name)
