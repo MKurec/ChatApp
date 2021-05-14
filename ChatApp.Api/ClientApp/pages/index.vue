@@ -62,16 +62,16 @@
       </v-col>
       <v-col>
         <v-container fluid>
-          <v-row v-for="(item, index) in messages" :key="index">
+          <v-row v-for="message in messages" :key="message">
             <v-avatar class="ma-2" size="25px">
               <img
                 alt="Avatar"
                 src="https://avatars0.githubusercontent.com/u/9064066?v=4&s=460"
               />
             </v-avatar>
-
+              <!--  confusing naming below --> 
             <v-textarea
-              v-model="messages.item"
+              :value="message.message"    
               dense
               auto-grow
               outlined
@@ -130,6 +130,7 @@ export default {
       users: [],
       userMessage: "",
       messages: [],
+      selectedUser: null,
       recent: [
         {
           active: true,
@@ -155,6 +156,8 @@ export default {
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
+    //...mapState({      connection: state => state.connection
+   // })
   },
   methods: {
     async logout() {
@@ -178,7 +181,7 @@ export default {
       this.connection.on("OnConnectedAsync", (res) => {
         console.log(res);
       });
-      this.connection.on("SendMessage", (res) => {
+      this.connection.on("ReciveMessage", (res) => {
         var messageObj = {
           message: res,
         };
@@ -193,7 +196,8 @@ export default {
   },
 
   created() {
-    if (this.connection == null) {
+    this.connection = HubConnectionBuilder()
+    if (this.connection == null) {  
       console.log(this.$auth.strategy.token.get().substring(7));
       this.connection = new HubConnectionBuilder()
         .withUrl("https://localhost:44387/chatHub", {

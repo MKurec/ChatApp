@@ -29,7 +29,7 @@ namespace SignalRServer.Hubs
         public async Task SendMessage(string message)
         {
             Console.WriteLine("Message received");
-            await Clients.Client(Context.ConnectionId).SendAsync("SendMessage", message);
+            await Clients.Client(Context.ConnectionId).SendAsync("ReciveMessage", message);
         }
 
         public async Task JoinRoom(string name)

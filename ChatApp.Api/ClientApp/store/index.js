@@ -10,14 +10,11 @@ export const getters = {
   },
     
 }
+export const state = () => ({
+  connection: new HubConnectionBuilder()
+})
 export const mutations = {
-
-  connection(connection) {
-    if (connection === null) {
-      connection = new HubConnectionBuilder()
-        .withUrl("https://localhost:44387/chatHub")
-        .build();
-    }
-    return HubConnectionBuilder.connection
+  set(state, connection) {
+    state.connection = connection
   }
 }
