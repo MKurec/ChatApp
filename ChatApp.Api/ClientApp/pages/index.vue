@@ -128,12 +128,13 @@
                   :append-icon="
                     marker ? 'mdi-map-marker' : 'mdi-map-marker-off'
                   "
-                  :append-outer-icon="messageContent ? 'mdi-send' : 'mdi-microphone'"
+                  :append-outer-icon="messages ? 'mdi-send' : 'mdi-microphone'"
                   filled
                   clear-icon="mdi-close-circle"
                   clearable
                   label="Message"
                   type="text"
+                  @click:append="toggleMarker"
                   @click:append-outer="sendMessage"
                 ></v-text-field>
               </v-col>
@@ -166,8 +167,6 @@ export default {
       users: [],
       userMessage: "",
       //messages: [],
-      messageObj: {
-      },
       selectedUser: null,
       recent: [
         {
@@ -194,8 +193,8 @@ export default {
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
-    //...mapState({      messages: state => state.messages })
-    messages () { return this.$store.state.messages    }
+    //...mapState({      connection: state => state.connection
+    // })
   },
   methods: {
     async logout() {
@@ -216,14 +215,13 @@ export default {
             return console.error(err);
           })
           .then(() => {
-            messageObj = {
+            var messageObj = {
               message: this.messageContent,
               user: this.users[this.selectedUser].id,
               isRecived: "false",
             };
             this.messageContent = ''
-            //this.messages.push(messageObj);
-            this.addMessage(messageObj)
+            this.messages.push(messageObj);
             console.log(res);
             
           });
@@ -237,22 +235,18 @@ export default {
         console.log(res);
       });
       this.connection.on("ReciveMessage", (res, res2) => {
-         messageObj = {
+        var messageObj = {
           message: res,
           user: res2,
           isRecived: "true",
         };
-        //this.messages.push(messageObj);
-        this.addMessage(messageObj)
+        this.messages.push(messageObj);
         console.log(res);
       });
     },
     getUsers: async function () {
       let users = await this.$axios.$get("/api/Users/Users/");
       this.users = users;
-    },
-    addMessage (event) {
-      this.$store.commit('index/add', messageObj)
     },
   },
 
