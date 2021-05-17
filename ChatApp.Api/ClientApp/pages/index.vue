@@ -38,7 +38,7 @@
         <v-divider></v-divider>
 
         <v-list subheader>
-          <v-subheader>Previous chats</v-subheader>
+          <v-subheader>Previous chats </v-subheader>
           <v-list-item-group v-model="selectedUser" color="primary">
             <v-list-item v-for="user in users" :key="user.id">
               <v-list-item-avatar>
@@ -60,27 +60,64 @@
           </v-list-item-group>
         </v-list>
       </v-col>
-      <v-col>
-        <v-container fluid>
-          <v-row v-for="message in messages" :key="message">
-            <v-avatar class="ma-2" size="25px">
-              <img
-                alt="Avatar"
-                src="https://avatars0.githubusercontent.com/u/9064066?v=4&s=460"
-              />
-            </v-avatar>
-              <!--  confusing naming below --> 
-            <v-textarea
-              :value="message.message"    
-              dense
-              auto-grow
-              outlined
-              rows="1"
-              row-height="15"
-              readonly
-              rounded
-            ></v-textarea>
-          </v-row>
+      <v-col v-if="selectedUser">
+        <v-container >
+          <div v-for="message in messages" :key="message" >
+            <v-row
+            class="d-flex justify-start pr-6 pa-3"
+              v-if="
+                message.user == users[selectedUser].id &&
+                message.isRecived == 'true'
+              "
+
+              
+            >
+              <v-avatar size="25px">
+                <img
+                  alt="Avatar"
+                  src="https://avatars0.githubusercontent.com/u/9064066?v=4&s=460"
+                />
+              </v-avatar>
+              <!--  confusing naming below -->
+
+              <v-textarea
+                :value="message.message"
+                rows="1"
+                dense
+                auto-grow
+                outlined
+                readonly
+                rounded
+              ></v-textarea>
+            </v-row>
+            <v-row
+            class="d-flex justify-end pr-6 pa-3"
+              v-if="
+                message.user == users[selectedUser].id &&
+                message.isRecived == 'false'
+              "
+              
+            >
+              
+              <!--  confusing naming below -->
+
+              <v-textarea  
+                :value="message.message"
+                dense
+                rows="1"
+                auto-grow
+                outlined
+                readonly
+                rounded
+              ></v-textarea>
+              <v-avatar size="25px">
+                <img
+                  alt="Avatar"
+                  src="https://cdn.vuetifyjs.com/images/lists/4.jpg"
+                />
+              </v-avatar>
+            </v-row>
+          </div>
         </v-container>
         <v-form>
           <v-container>
@@ -91,13 +128,12 @@
                   :append-icon="
                     marker ? 'mdi-map-marker' : 'mdi-map-marker-off'
                   "
-                  :append-outer-icon="messages ? 'mdi-send' : 'mdi-microphone'"
+                  :append-outer-icon="messageContent ? 'mdi-send' : 'mdi-microphone'"
                   filled
                   clear-icon="mdi-close-circle"
                   clearable
                   label="Message"
                   type="text"
-                  @click:append="toggleMarker"
                   @click:append-outer="sendMessage"
                 ></v-text-field>
               </v-col>
@@ -129,7 +165,9 @@ export default {
       connection: null,
       users: [],
       userMessage: "",
-      messages: [],
+      //messages: [],
+      messageObj: {
+      },
       selectedUser: null,
       recent: [
         {
@@ -156,8 +194,8 @@ export default {
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
-    //...mapState({      connection: state => state.connection
-   // })
+    //...mapState({      messages: state => state.messages })
+    messages () { return this.$store.state.messages    }
   },
   methods: {
     async logout() {
@@ -167,11 +205,28 @@ export default {
       (this.marker = !this.marker), this.created(), this.mounted();
     },
     sendMessage() {
-      this.connection
-        .invoke("SendMessage", this.messageContent)
-        .catch(function (err) {
-          return console.error(err);
-        });
+      if (this.selectedUser)
+        this.connection
+          .invoke(
+            "SendMessage",
+            this.messageContent,
+            this.users[this.selectedUser].id
+          )
+          .catch(function (err) {
+            return console.error(err);
+          })
+          .then(() => {
+            messageObj = {
+              message: this.messageContent,
+              user: this.users[this.selectedUser].id,
+              isRecived: "false",
+            };
+            this.messageContent = ''
+            //this.messages.push(messageObj);
+            this.addMessage(messageObj)
+            console.log(res);
+            
+          });
     },
     openDialog() {
       this.dialog = true;
@@ -181,11 +236,14 @@ export default {
       this.connection.on("OnConnectedAsync", (res) => {
         console.log(res);
       });
-      this.connection.on("ReciveMessage", (res) => {
-        var messageObj = {
+      this.connection.on("ReciveMessage", (res, res2) => {
+         messageObj = {
           message: res,
+          user: res2,
+          isRecived: "true",
         };
-        this.messages.push(messageObj);
+        //this.messages.push(messageObj);
+        this.addMessage(messageObj)
         console.log(res);
       });
     },
@@ -193,24 +251,30 @@ export default {
       let users = await this.$axios.$get("/api/Users/Users/");
       this.users = users;
     },
+    addMessage (event) {
+      this.$store.commit('index/add', messageObj)
+    },
   },
 
+  middleware: "auth",
   created() {
-    this.connection = HubConnectionBuilder()
-    if (this.connection == null) {  
-      console.log(this.$auth.strategy.token.get().substring(7));
+    if (this.connection == null) {
       this.connection = new HubConnectionBuilder()
         .withUrl("https://localhost:44387/chatHub", {
           accessTokenFactory: () =>
             this.$auth.strategy.token.get().substring(7),
         })
+        .configureLogging(signalR.LogLevel.Information)
         .build();
     }
+    console.log(this.connection.state, "sd");
     this.connection
       .start()
       .then(() => {
-        console.log("Connection Success");
-        this.listen(), this.getUsers();
+        console.log(this.connection.state),
+          console.log("SignalR Connected."),
+          this.listen(),
+          this.getUsers();
       })
       .catch((err) => {
         console.log(`Connection Error ${err}`);
@@ -219,7 +283,5 @@ export default {
       console.log("Connection Destroy");
     });
   },
-
-  middleware: "auth",
 };
 </script>

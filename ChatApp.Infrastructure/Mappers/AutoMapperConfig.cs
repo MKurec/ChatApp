@@ -13,6 +13,8 @@ namespace EComerence.Infrastructure.Mappers
             => new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<User, AccountDto>();
+                cfg.CreateMap<User, UserDto>();
+                cfg.CreateMap<Connection, ConnectionDto>();
 
             })
             .CreateMapper();

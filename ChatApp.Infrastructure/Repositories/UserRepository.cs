@@ -29,7 +29,7 @@ namespace ChatApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<User>> BrowseAsync(string name = "")
         {
-            var users = _users.AsEnumerable();
+            var users = _users.Include(x => x.Connections).AsEnumerable();
             if (!string.IsNullOrEmpty(name))
             {
                 users = users.Where(x => x.Name.ToUpperInvariant().Contains(name.ToUpperInvariant()));
@@ -46,7 +46,7 @@ namespace ChatApp.Infrastructure.Repositories
 
         public async Task<User> GetAsync(Guid id)
         {
-            var @user = await Task.FromResult(_users.SingleOrDefault(x => x.Id == id));
+            var @user = await Task.FromResult(_users.Include(x => x.Connections).SingleOrDefault(x => x.Id == id));
             return user;
         }
 

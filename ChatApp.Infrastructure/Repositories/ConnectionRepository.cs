@@ -25,9 +25,9 @@ namespace ChatApp.Infrastructure.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<Connection> GetAsync(Guid id)
+        public async Task<Connection> GetAsync(string id)
         {
-            var @connection = await Task.FromResult(_connections.SingleOrDefault(x => x.Id == id));
+            var @connection = await Task.FromResult(_connections.SingleOrDefault(x => x.ConnectionId == id));
             return connection;
         }
     }

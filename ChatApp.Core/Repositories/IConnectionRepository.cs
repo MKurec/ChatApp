@@ -8,7 +8,7 @@ namespace ChatApp.Core.Repositories
 {
     public interface IConnectionRepository
     {
-        Task<Connection> GetAsync(Guid id);
+        Task<Connection> GetAsync(string id);
         Task DeleteAsync(Connection @connection);
     }
 }

@@ -45,6 +45,10 @@ namespace ChatApp.Core.Domain
             }
             Password = password;
         }
+        public void AddConnection(string connectionId)
+        {
+            Connections.Add(new Connection(connectionId,this.Id));
+        }
 
     }
 }

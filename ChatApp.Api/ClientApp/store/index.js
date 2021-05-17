@@ -1,5 +1,7 @@
+export const state = () => ({
+  messages: []
+})
 
-import { HubConnectionBuilder} from "@microsoft/signalr";
 export const getters = {
   isAuthenticated(state) {
     return state.auth.loggedIn
@@ -10,11 +12,13 @@ export const getters = {
   },
     
 }
-export const state = () => ({
-  connection: new HubConnectionBuilder()
-})
 export const mutations = {
-  set(state, connection) {
-    state.connection = connection
+
+  add (state,message, user,isRecived) {
+    state.messages.push({
+      Message: message,
+      User: user,
+      IsRecived: isRecived,
+    })
   }
 }
