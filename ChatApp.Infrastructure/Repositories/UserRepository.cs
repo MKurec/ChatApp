@@ -67,5 +67,13 @@ namespace ChatApp.Infrastructure.Repositories
             Context.SaveChanges();
             await Task.CompletedTask;
         }
+
+        public async Task UpdateMessagesAsync(User @user)
+        {
+            Context.Attach(@user);
+            Context.Entry(@user).Collection(x => x.Messages).IsModified=true;
+            Context.SaveChanges();
+            await Task.CompletedTask;
+        }
     }
 }

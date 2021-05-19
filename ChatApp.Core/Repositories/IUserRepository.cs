@@ -15,6 +15,7 @@ namespace ChatApp.Core.Repositories
 
         Task AddAsync(User user);
         Task UpdateAsync(User user);
+        Task UpdateMessagesAsync(User @user);
         Task DeleteAsync(User user);
 
     }

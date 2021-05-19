@@ -64,7 +64,7 @@ namespace ChatApp.Core.Domain
             {
                 throw new Exception("You couldn't send empty message");
             }
-            Messages.Add(new Message(text, reciverId, this.Id, isRecived));
+            Messages.Add(new Message(new Guid() ,text, reciverId, this.Id, isRecived));
         }
 
     }

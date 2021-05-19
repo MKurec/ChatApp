@@ -105,12 +105,12 @@ namespace ChatApp.Infrastructure.Services
             var @user = await _userRepository.GetAsync(Id);
             if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
             @user.AddMessage(message,reciverId,false);
+            await _userRepository.UpdateMessagesAsync(@user);
             var ReciverId = new Guid(reciverId);
             var @reciver = await _userRepository.GetAsync(ReciverId);
             if (reciver == null) throw new Exception($"User with id: '{reciverId}' don't exist");
-            @reciver.AddMessage(message, userId, true);
-            await _userRepository.UpdateAsync(@user);
-            await _userRepository.UpdateAsync(@reciver);
+            @reciver.AddMessage(message, userId, true);       
+            await _userRepository.UpdateMessagesAsync(@reciver);
         }
         public async Task RemoveConnection(string connectionId)
         {

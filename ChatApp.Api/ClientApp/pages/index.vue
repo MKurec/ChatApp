@@ -61,16 +61,14 @@
         </v-list>
       </v-col>
       <v-col v-if="selectedUser">
-        <v-container >
-          <div v-for="message in messages" :key="message" >
+        <v-container>
+          <div v-for="thismessage in messages" :key="thismessage">
             <v-row
-            class="d-flex justify-start pr-6 pa-3"
+              class="d-flex justify-start pr-6 pa-3"
               v-if="
-                message.user == users[selectedUser].id &&
-                message.isRecived == 'true'
+                thismessage.user == users[selectedUser].id &&
+                thismessage.isRecived == true
               "
-
-              
             >
               <v-avatar size="25px">
                 <img
@@ -81,7 +79,7 @@
               <!--  confusing naming below -->
 
               <v-textarea
-                :value="message.message"
+                :value="thismessage.message"
                 rows="1"
                 dense
                 auto-grow
@@ -91,18 +89,16 @@
               ></v-textarea>
             </v-row>
             <v-row
-            class="d-flex justify-end pr-6 pa-3"
+              class="d-flex justify-end pr-6 pa-3"
               v-if="
-                message.user == users[selectedUser].id &&
-                message.isRecived == 'false'
+                thismessage.user == users[selectedUser].id &&
+                thismessage.isRecived == false
               "
-              
             >
-              
               <!--  confusing naming below -->
 
-              <v-textarea  
-                :value="message.message"
+              <v-textarea
+                :value="thismessage.message"
                 dense
                 rows="1"
                 auto-grow
@@ -165,8 +161,8 @@ export default {
       name: "",
       connection: null,
       users: [],
-      userMessage: "",
       messages: [],
+      userMessage: "",
       selectedUser: null,
       recent: [
         {
@@ -218,12 +214,10 @@ export default {
             var messageObj = {
               message: this.messageContent,
               user: this.users[this.selectedUser].id,
-              isRecived: "false",
+              isRecived: false,
             };
-            this.messageContent = ''
+            this.messageContent = "";
             this.messages.push(messageObj);
-            console.log(res);
-            
           });
     },
     openDialog() {
@@ -238,7 +232,7 @@ export default {
         var messageObj = {
           message: res,
           user: res2,
-          isRecived: "true",
+          isRecived: true,
         };
         this.messages.push(messageObj);
         console.log(res);
@@ -248,6 +242,18 @@ export default {
       let users = await this.$axios.$get("/api/Users/Users/");
       this.users = users;
     },
+    getMessages: async function () {
+    let RecivedMessages = await this.$axios.$get("https://localhost:44387/Messages/");
+    RecivedMessages.forEach( message=>{
+    
+      var messageObj = {
+        message: message.text,
+        user: message.receiverId,
+        isRecived: message.isRecived,
+      }
+      this.messages.push(messageObj)
+    }) 
+  },
   },
 
   middleware: "auth",
@@ -268,7 +274,8 @@ export default {
         console.log(this.connection.state),
           console.log("SignalR Connected."),
           this.listen(),
-          this.getUsers();
+          this.getUsers(),
+          this.getMessages();
       })
       .catch((err) => {
         console.log(`Connection Error ${err}`);

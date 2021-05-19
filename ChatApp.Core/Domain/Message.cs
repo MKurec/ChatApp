@@ -15,8 +15,9 @@ namespace ChatApp.Core.Domain
 
         private Message() { }
 
-        public Message(string text, string reciverId, Guid userId, bool isRecived)
+        public Message(Guid id,string text, string reciverId, Guid userId, bool isRecived)
         {
+            Id = id;
             Text = text;
             ReceiverId = reciverId;
             UserId = userId;
