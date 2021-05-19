@@ -30,7 +30,7 @@
                 <v-list-item-title v-text="user.name"></v-list-item-title>
               </v-list-item-content>
               <v-list-item-icon>
-                <v-icon :color="activechat ? 'deep-purple accent-4' : 'grey'">
+                <v-icon :color="user.isChatActive ? 'deep-purple accent-4' : 'grey'">
                   mdi-message-outline
                 </v-icon>
               </v-list-item-icon>
@@ -142,13 +142,22 @@ export default {
       messages: [],
       userMessage: "",
       selectedUser: null,
-      activechat: false,
     };
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
     //...mapState({      connection: state => state.connection
     // })
+  },
+  watch: {
+    selectedUser: function(){
+      if (this.users[this.selectedUser].isChatActive == true)
+      {
+        this.users[this.selectedUser].isChatActive = false,
+        this.$axios.put("https://localhost:44387/Users/UnActiveUser/"+this.users[this.selectedUser].id)
+        console.log(this.users[this.selectedUser].id)
+      }
+    }
   },
   methods: {
     async logout() {
@@ -193,6 +202,7 @@ export default {
           isRecived: true,
         };
         this.messages.push(messageObj);
+        this.users[messageObj.user].isChatActive=true;
         console.log(res);
       });
     },

@@ -46,7 +46,7 @@ namespace ChatApp.Infrastructure.Repositories
 
         public async Task<User> GetAsync(Guid id)
         {
-            var @user = await Task.FromResult(_users.Include(x => x.Connections).Include(x => x.Messages).SingleOrDefault(x => x.Id == id));
+            var @user = await Task.FromResult(_users.Include(x => x.Connections).Include(x => x.Messages).Include(x => x.ActiveChats).SingleOrDefault(x => x.Id == id));
             return user;
         }
 
@@ -72,6 +72,7 @@ namespace ChatApp.Infrastructure.Repositories
         {
             Context.Attach(@user);
             Context.Entry(@user).Collection(x => x.Messages).IsModified=true;
+            Context.Entry(@user).Collection(x => x.ActiveChats).IsModified = true;
             Context.SaveChanges();
             await Task.CompletedTask;
         }

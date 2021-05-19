@@ -28,10 +28,19 @@ namespace ChatApp.Infrastructure.Services
             _jwtHandler = jwtHandler;
             _fileRepository = fileRepository;
         }
-        public async Task<IEnumerable<AccountDto>> BrowseAsync(string name = null)
+        public async Task<IEnumerable<AccountDto>> BrowseAsync(Guid userId, string name = null)
         {
             var @users = await _userRepository.BrowseAsync(name);
-            return _mapper.Map<IEnumerable<AccountDto>>(users);
+            var @thisuser = await _userRepository.GetAsync(userId);
+            if (thisuser == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var @activeChats = thisuser.ActiveChats.AsEnumerable();
+            //var jointusers = users.Join(@activeChats, User => User.Id.ToString(), ActiveChat => ActiveChat.UserId, (User, ActiveChat) =>
+            //                        new { User.Id, User.Name, User.Email,ActiveChat=ActiveChat.IsActiv ==null ? false : ActiveChat.IsActiv });
+            IEnumerable<AccountDto> jointusers = (from user in users
+                             join activeChat in activeChats on user.Id.ToString() equals activeChat.UserId into gr
+                             from output in gr.DefaultIfEmpty()
+                             select new AccountDto() {Id= user.Id,Name= user.Name,Email= user.Email, IsChatActive = output?.IsActiv });
+            return jointusers;
         }
 
         public async Task<AccountDto> GetAsync(Guid id)
@@ -63,6 +72,14 @@ namespace ChatApp.Infrastructure.Services
             if (user == null) throw new Exception($"User with id : {userId} dosen't exist");
             var @mesages = user.Messages.AsEnumerable();
             return _mapper.Map<IEnumerable<MessageDto>>(mesages);
+        }
+
+        public async Task<IEnumerable<ActiveChatDto>> GetUserActiveChats(Guid userId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            if (user == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var @activeChats = user.ActiveChats.AsEnumerable();
+            return _mapper.Map<IEnumerable<ActiveChatDto>>(activeChats);
         }
 
         public async Task<FileStream> GetPhotoAsync(Guid id,string defaultpath)
@@ -112,19 +129,32 @@ namespace ChatApp.Infrastructure.Services
             @user.AddConnection(connectionId);
             await _userRepository.UpdateAsync(@user);
         }
+        public async Task SetChatStatus(string Id,Guid userId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
+            var activchat = @user.ActiveChats.SingleOrDefault(x => x.UserId == Id);
+            if (activchat != null)
+            {
+                activchat.SetFlag(false);
+                await _userRepository.UpdateMessagesAsync(@user);
+            }
+        }
 
         public async Task AddMessage(string userId, string message, string reciverId)
         {
             var Id = new Guid(userId);
             var @user = await _userRepository.GetAsync(Id);
             if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
-            @user.AddMessage(message,reciverId,false);
+            user.AddMessage(message,reciverId,false);
             await _userRepository.UpdateMessagesAsync(@user);
             var ReciverId = new Guid(reciverId);
             var @reciver = await _userRepository.GetAsync(ReciverId);
             if (reciver == null) throw new Exception($"User with id: '{reciverId}' don't exist");
-            @reciver.AddMessage(message, userId, true);       
+            reciver.AddMessage(message, userId, true);
+            reciver.SetChatStatus(true, userId);
             await _userRepository.UpdateMessagesAsync(@reciver);
+            
         }
         public async Task RemoveConnection(string connectionId)
         {

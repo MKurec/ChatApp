@@ -38,7 +38,7 @@ namespace ChatApp.Api.Controllers
         [Authorize]
         public async Task<IActionResult> Get(string name)
         {
-            return Json(await _userService.BrowseAsync(name));
+            return Json(await _userService.BrowseAsync(UserId, name));
         }
         [HttpPost("register")]
         public async Task<IActionResult> Post([FromBody] RegisterUser command)
@@ -52,6 +52,13 @@ namespace ChatApp.Api.Controllers
         public async Task<IActionResult> Post([FromBody] Login command)
         {
             return Json(await _userService.LoginAsync(command.Email, command.Password));
+        }
+        [HttpPut("UnActiveUser/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> Put(string userId)
+        {
+            await _userService.SetChatStatus(userId,UserId);
+            return StatusCode(200);
         }
         [HttpPost("AddPhoto")]
         [Authorize]
