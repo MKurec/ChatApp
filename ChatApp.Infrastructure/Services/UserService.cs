@@ -65,6 +65,14 @@ namespace ChatApp.Infrastructure.Services
             return _mapper.Map<IEnumerable<MessageDto>>(mesages);
         }
 
+        public async Task<IEnumerable<ActiveChatDto>> GetUserActiveChats(Guid userId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            if (user == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var @activeChats = user.ActiveChats.AsEnumerable();
+            return _mapper.Map<IEnumerable<ActiveChatDto>>(activeChats);
+        }
+
         public async Task<FileStream> GetPhotoAsync(Guid id,string defaultpath)
         {
             var @user = await _userRepository.GetAsync(id);
@@ -112,19 +120,33 @@ namespace ChatApp.Infrastructure.Services
             @user.AddConnection(connectionId);
             await _userRepository.UpdateAsync(@user);
         }
+        public async Task SetChatStatus(string userId)
+        {
+            var Id = new Guid(userId);
+            var @user = await _userRepository.GetAsync(Id);
+            if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
+            var activchat = @user.ActiveChats.SingleOrDefault(x => x.UserId == userId);
+            if (activchat != null)
+            {
+                activchat.SetFlag(false);
+                await _userRepository.UpdateMessagesAsync(@user);
+            }
+        }
 
         public async Task AddMessage(string userId, string message, string reciverId)
         {
             var Id = new Guid(userId);
             var @user = await _userRepository.GetAsync(Id);
             if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
-            @user.AddMessage(message,reciverId,false);
+            user.AddMessage(message,reciverId,false);
             await _userRepository.UpdateMessagesAsync(@user);
             var ReciverId = new Guid(reciverId);
             var @reciver = await _userRepository.GetAsync(ReciverId);
             if (reciver == null) throw new Exception($"User with id: '{reciverId}' don't exist");
-            @reciver.AddMessage(message, userId, true);       
+            reciver.AddMessage(message, userId, true);
+            reciver.SetChatStatus(true, userId);
             await _userRepository.UpdateMessagesAsync(@reciver);
+            
         }
         public async Task RemoveConnection(string connectionId)
         {

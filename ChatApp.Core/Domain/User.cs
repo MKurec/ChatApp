@@ -14,6 +14,7 @@ namespace ChatApp.Core.Domain
         public ICollection<Connection> Connections { get; protected set; }
         public ICollection<Message> Messages { get; protected set; }
         public string? ImageLocation { get; protected set; }
+        public ICollection<ActiveChat> ActiveChats { get; protected set; }
 
         protected User() { }
 
@@ -31,6 +32,18 @@ namespace ChatApp.Core.Domain
                 throw new Exception($"User can not have an empty name.");
             }
             Name = name;
+        }
+        public void SetChatStatus(bool isActiv,string userId)
+        { 
+            if(ActiveChats.SingleOrDefault(x => x.UserId== userId)==null)
+            {
+                ActiveChats.Add(new ActiveChat(userId,isActiv));
+            }
+            else
+            {
+                var activChat = ActiveChats.SingleOrDefault(x => x.UserId == userId);
+                activChat.SetFlag(isActiv);
+            }
         }
         public void SetEmail(string email)
         {

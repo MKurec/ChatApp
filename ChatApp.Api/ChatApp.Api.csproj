@@ -11,9 +11,13 @@
 
   <ItemGroup>
     <Compile Remove="Nowy folder\**" />
+    <Compile Remove="wwwroot\uploads\**" />
     <Content Remove="Nowy folder\**" />
+    <Content Remove="wwwroot\uploads\**" />
     <EmbeddedResource Remove="Nowy folder\**" />
+    <EmbeddedResource Remove="wwwroot\uploads\**" />
     <None Remove="Nowy folder\**" />
+    <None Remove="wwwroot\uploads\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\" />
+    <Folder Include="wwwroot\Nowy folder\" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,7 @@ namespace EComerence.Infrastructure.Mappers
                 cfg.CreateMap<User, UserDto>();
                 cfg.CreateMap<Connection, ConnectionDto>();
                 cfg.CreateMap<Message, MessageDto>();
+                cfg.CreateMap<ActiveChat, ActiveChatDto>();
 
             })
             .CreateMapper();
