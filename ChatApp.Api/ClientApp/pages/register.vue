@@ -1,10 +1,8 @@
 <template>
-  <div class="d-flex algin-center justify-center ">
+  <div class="d-flex algin-center justify-center">
     <Alert v-model="dialog" :errmesage="errorMessage" />
     <v-dialog v-model="dialog" persistent max-width="600px">
-      
       <v-card>
-        
         <v-card-title>
           <span class="headline">Załóż konto</span>
         </v-card-title>
@@ -44,6 +42,12 @@
                   type="password"
                   required
                 ></v-text-field>
+                <v-file-input
+                  v-model="photo"
+                  label="Dodaj Zdjęcie"
+                  accept="image/png, image/jpeg, image/bmp"
+                  prepend-icon="mdi-camera"
+                ></v-file-input>
               </v-col>
             </v-row>
           </v-container>
@@ -72,10 +76,16 @@ export default {
         email: "",
         password: "",
       },
+      login: {
+        email: "",
+        password: "",
+      },
       show1: false,
       dialog: true,
       checkPassword: "",
       errorMessage: "",
+      photo: null,
+      userId: "",
     };
   },
   methods: {
@@ -87,11 +97,31 @@ export default {
           password: this.register.password,
         })
         .catch((err) => {
-            this.errorMessage = err.response.data.message,
-            this.dialog = false
-
+          (this.errorMessage = err.response.data.message),
+            (this.dialog = false);
         });
-        if(this.dialog==true)this.$router.replace("/login");
+      if (this.dialog == true) {
+        this.login.email=this.register.email
+        this.login.password=this.register.password
+        try {
+          let response = await this.$auth.loginWith("local", {
+            data: this.login,
+          });
+          console.log(response),
+          this.addPhoto();
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    },
+    async addPhoto() {
+      const fd = new FormData();
+      if (this.photo) {
+        fd.append("photo", this.photo, this.photo.name);
+        await this.$axios.post("https://localhost:44387/Users/AddPhoto", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
     },
   },
 };

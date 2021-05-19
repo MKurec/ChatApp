@@ -44,6 +44,7 @@ namespace ChatApp.Api
             services.AddScoped<DbContext, AplicationDbContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IFileRepository, FileRepository>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConnectionRepository, ConnectionRepository>();
             services.AddSingleton<IJwtHandler, JwtHandler>();

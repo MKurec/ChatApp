@@ -16,35 +16,13 @@
     <v-row>
       <v-col style="max-width: 400px" flex-grow="0">
         <v-list subheader>
-          <v-subheader>Recent chat</v-subheader>
-
-          <v-list-item v-for="chat in recent" :key="chat.avatar">
-            <v-list-item-avatar>
-              <v-img :alt="`${chat.title} avatar`" :src="chat.avatar"></v-img>
-            </v-list-item-avatar>
-
-            <v-list-item-content>
-              <v-list-item-title v-text="chat.title"></v-list-item-title>
-            </v-list-item-content>
-
-            <v-list-item-icon>
-              <v-icon :color="activechat ? 'deep-purple accent-4' : 'grey'">
-                mdi-message-outline
-              </v-icon>
-            </v-list-item-icon>
-          </v-list-item>
-        </v-list>
-
-        <v-divider></v-divider>
-
-        <v-list subheader>
-          <v-subheader>Previous chats </v-subheader>
+          <v-subheader>Users </v-subheader>
           <v-list-item-group v-model="selectedUser" color="primary">
             <v-list-item v-for="user in users" :key="user.id">
               <v-list-item-avatar>
                 <v-img
                   :alt="`${user.name} avatar`"
-                  src="https://cdn.vuetifyjs.com/images/lists/1.jpg"
+                  :src="'https://localhost:44387/Users/Image/'+user.id"
                 ></v-img>
               </v-list-item-avatar>
 
@@ -73,7 +51,7 @@
               <v-avatar size="25px">
                 <img
                   alt="Avatar"
-                  src="https://avatars0.githubusercontent.com/u/9064066?v=4&s=460"
+                  :src="'https://localhost:44387/Users/Image/'+users[selectedUser].id"
                 />
               </v-avatar>
               <!--  confusing naming below -->
@@ -109,7 +87,7 @@
               <v-avatar size="25px">
                 <img
                   alt="Avatar"
-                  src="https://cdn.vuetifyjs.com/images/lists/4.jpg"
+                  :src="'https://localhost:44387/Users/Image/'+users[selectedUser].id"
                 />
               </v-avatar>
             </v-row>
@@ -164,26 +142,6 @@ export default {
       messages: [],
       userMessage: "",
       selectedUser: null,
-      recent: [
-        {
-          active: true,
-          avatar: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
-          title: "Jason Oner",
-        },
-        {
-          active: true,
-          avatar: "https://cdn.vuetifyjs.com/images/lists/2.jpg",
-          title: "Mike Carlson",
-        },
-        {
-          avatar: "https://cdn.vuetifyjs.com/images/lists/3.jpg",
-          title: "Cindy Baker",
-        },
-        {
-          avatar: "https://cdn.vuetifyjs.com/images/lists/4.jpg",
-          title: "Ali Connors",
-        },
-      ],
       activechat: false,
     };
   },
@@ -243,17 +201,18 @@ export default {
       this.users = users;
     },
     getMessages: async function () {
-    let RecivedMessages = await this.$axios.$get("https://localhost:44387/Messages/");
-    RecivedMessages.forEach( message=>{
-    
-      var messageObj = {
-        message: message.text,
-        user: message.receiverId,
-        isRecived: message.isRecived,
-      }
-      this.messages.push(messageObj)
-    }) 
-  },
+      let RecivedMessages = await this.$axios.$get(
+        "https://localhost:44387/Messages/"
+      );
+      RecivedMessages.forEach((message) => {
+        var messageObj = {
+          message: message.text,
+          user: message.receiverId,
+          isRecived: message.isRecived,
+        };
+        this.messages.push(messageObj);
+      });
+    },
   },
 
   middleware: "auth",

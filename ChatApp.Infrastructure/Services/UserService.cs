@@ -3,11 +3,15 @@ using ChatApp.Core.Domain;
 using ChatApp.Core.Repositories;
 using ChatApp.Infrastructure.DTO;
 using ChatApp.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using System.IO;
 
 namespace ChatApp.Infrastructure.Services
 {
@@ -16,11 +20,13 @@ namespace ChatApp.Infrastructure.Services
         private readonly IUserRepository _userRepository;
         private readonly IJwtHandler _jwtHandler;
         private readonly IMapper _mapper;
-        public UserService(IUserRepository userRepository, IJwtHandler jwtHandler, IMapper mapper)
+        private readonly IFileRepository _fileRepository;
+        public UserService(IUserRepository userRepository, IJwtHandler jwtHandler, IMapper mapper, IFileRepository fileRepository)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _jwtHandler = jwtHandler;
+            _fileRepository = fileRepository;
         }
         public async Task<IEnumerable<AccountDto>> BrowseAsync(string name = null)
         {
@@ -57,6 +63,14 @@ namespace ChatApp.Infrastructure.Services
             if (user == null) throw new Exception($"User with id : {userId} dosen't exist");
             var @mesages = user.Messages.AsEnumerable();
             return _mapper.Map<IEnumerable<MessageDto>>(mesages);
+        }
+
+        public async Task<FileStream> GetPhotoAsync(Guid id,string defaultpath)
+        {
+            var @user = await _userRepository.GetAsync(id);
+            var @image = await _fileRepository.GetAsync(@user.ImageLocation, defaultpath);
+            return image;
+
         }
 
 
@@ -118,6 +132,20 @@ namespace ChatApp.Infrastructure.Services
             var @user = @users.SingleOrDefault(x => x.Connections.Any(x => x.ConnectionId == connectionId) != false);
             if (users == null) throw new Exception($"No users with '{connectionId}' in database");
             @user.Connections.Remove(@user.Connections.Single(x => x.ConnectionId == connectionId));
+            await _userRepository.UpdateAsync(@user);
+        }
+        public async Task AddPhotoAsync(string path, Guid id, IFormFile photo)
+        {
+            var @user = await _userRepository.GetAsync(id);
+            int width = 0;
+            var productImage = Image.Load(photo.OpenReadStream());
+            int div = productImage.Height / 256;
+            int hight = productImage.Height / div;
+            if (productImage.Height < productImage.Width) width = 256;
+            else width = productImage.Width / div;
+            productImage.Mutate(x => x.Resize(width, hight));
+            await _fileRepository.AddAsync(productImage, path, user.Id);
+            user.SetImageLocation(Path.Combine(path + "\\uploads\\" + user.Id + ".png"));
             await _userRepository.UpdateAsync(@user);
         }
     }

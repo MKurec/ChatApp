@@ -13,11 +13,13 @@ namespace ChatApp.Core.Domain
         public string Password { get; protected set; }
         public ICollection<Connection> Connections { get; protected set; }
         public ICollection<Message> Messages { get; protected set; }
+        public string? ImageLocation { get; protected set; }
 
         protected User() { }
 
-        public User(Guid Id, string name, string password, string email)
+        public User(Guid id, string name, string password, string email)
         {
+            Id = id;
             SetName(name);
             SetPassword(password);
             SetEmail(email);
@@ -65,6 +67,14 @@ namespace ChatApp.Core.Domain
                 throw new Exception("You couldn't send empty message");
             }
             Messages.Add(new Message(new Guid() ,text, reciverId, this.Id, isRecived));
+        }
+        public void SetImageLocation(String imageLocation)
+        {
+            if (string.IsNullOrEmpty(imageLocation))
+            {
+                throw new Exception($"User with id : '{this.Id}' can not have empty image location");
+            }
+            ImageLocation = imageLocation;
         }
 
     }
