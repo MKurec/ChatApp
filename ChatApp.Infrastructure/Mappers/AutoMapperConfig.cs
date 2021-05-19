@@ -15,6 +15,7 @@ namespace EComerence.Infrastructure.Mappers
                 cfg.CreateMap<User, AccountDto>();
                 cfg.CreateMap<User, UserDto>();
                 cfg.CreateMap<Connection, ConnectionDto>();
+                cfg.CreateMap<Message, MessageDto>();
 
             })
             .CreateMapper();

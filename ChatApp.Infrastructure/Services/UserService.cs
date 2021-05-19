@@ -50,11 +50,19 @@ namespace ChatApp.Infrastructure.Services
             var @Connections = user.Connections.AsEnumerable();
             return _mapper.Map<IEnumerable<ConnectionDto>>(Connections);
         }
-            
+
+        public async Task<IEnumerable<MessageDto>> GetUserMessages(Guid userId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            if (user == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var @mesages = user.Messages.AsEnumerable();
+            return _mapper.Map<IEnumerable<MessageDto>>(mesages);
+        }
+
 
         public async Task<TokenDto> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetAsync(email);
+            var user = await _userRepository.GetByEmailAsync(email);
             if (user == null)
             {
                 throw new Exception("Invalid credentials.");
@@ -76,6 +84,8 @@ namespace ChatApp.Infrastructure.Services
         {
             var user = await _userRepository.GetAsync(name);
             if (user != null) throw new Exception($"User with name: '{name}' alredy exist");
+            user = await _userRepository.GetByEmailAsync(email);
+            if (user != null) throw new Exception($"User with email: '{email}' alredy exist");
             user = new User(userId, name, password, email);
             await _userRepository.AddAsync(user);
         }
@@ -87,6 +97,20 @@ namespace ChatApp.Infrastructure.Services
             if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
             @user.AddConnection(connectionId);
             await _userRepository.UpdateAsync(@user);
+        }
+
+        public async Task AddMessage(string userId, string message, string reciverId)
+        {
+            var Id = new Guid(userId);
+            var @user = await _userRepository.GetAsync(Id);
+            if (user == null) throw new Exception($"User with id: '{userId}' don't exist");
+            @user.AddMessage(message,reciverId,false);
+            var ReciverId = new Guid(reciverId);
+            var @reciver = await _userRepository.GetAsync(ReciverId);
+            if (reciver == null) throw new Exception($"User with id: '{reciverId}' don't exist");
+            @reciver.AddMessage(message, userId, true);
+            await _userRepository.UpdateAsync(@user);
+            await _userRepository.UpdateAsync(@reciver);
         }
         public async Task RemoveConnection(string connectionId)
         {

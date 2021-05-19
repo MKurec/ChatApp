@@ -166,7 +166,7 @@ export default {
       connection: null,
       users: [],
       userMessage: "",
-      //messages: [],
+      messages: [],
       selectedUser: null,
       recent: [
         {

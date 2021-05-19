@@ -46,11 +46,16 @@ namespace ChatApp.Infrastructure.Repositories
 
         public async Task<User> GetAsync(Guid id)
         {
-            var @user = await Task.FromResult(_users.Include(x => x.Connections).SingleOrDefault(x => x.Id == id));
+            var @user = await Task.FromResult(_users.Include(x => x.Connections).Include(x => x.Messages).SingleOrDefault(x => x.Id == id));
             return user;
         }
 
-        public async Task<User> GetAsync(string email)
+        public async Task<User> GetAsync(string name)
+        {
+            var @user = await Task.FromResult(_users.SingleOrDefault(x => x.Name.ToLower() == name.ToLower()));
+            return user;
+        }
+        public async Task<User> GetByEmailAsync(string email)
         {
             var @user = await Task.FromResult(_users.SingleOrDefault(x => x.Email.ToLower() == email.ToLower()));
             return user;

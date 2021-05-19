@@ -23,6 +23,7 @@ using ChatApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SignalRServer.Hubs;
+using ChatApp.Api.Framework;
 
 namespace ChatApp.Api
 {
@@ -158,7 +159,7 @@ namespace ChatApp.Api
             app.UseCors(MyAllowSpecificOrigins);
             app.UseRouting();
             db.Database.Migrate();
-
+            app.UseErrorHandler();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {

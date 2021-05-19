@@ -1,7 +1,10 @@
 <template>
-  <v-row justify="center">
+  <div class="d-flex algin-center justify-center ">
+    <Alert v-model="dialog" :errmesage="errorMessage" />
     <v-dialog v-model="dialog" persistent max-width="600px">
+      
       <v-card>
+        
         <v-card-title>
           <span class="headline">Załóż konto</span>
         </v-card-title>
@@ -47,17 +50,21 @@
           <small>*indicates required field</small>
         </v-card-text>
         <v-card-actions class="d-flex justify-space-between">
-          <NuxtLink to="/" no-prefetch><v-btn color="blue darken-1" text> Zamknij </v-btn></NuxtLink>
+          <NuxtLink to="/" no-prefetch
+            ><v-btn color="blue darken-1" text> Zamknij </v-btn></NuxtLink
+          >
           <v-btn color="blue darken-1" text @click="registerUser">
             Dalej
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-row>
+  </div>
 </template>
 <script>
+import alert from "../components/Alert.vue";
 export default {
+  components: { alert },
   data() {
     return {
       register: {
@@ -68,15 +75,23 @@ export default {
       show1: false,
       dialog: true,
       checkPassword: "",
+      errorMessage: "",
     };
   },
   methods: {
     async registerUser() {
-      await this.$axios.post("/api/Users/register", {
-        name: this.register.firstName,
-        email: this.register.email,
-        password: this.register.password,
-      });
+      await this.$axios
+        .post("/api/Users/register", {
+          name: this.register.firstName,
+          email: this.register.email,
+          password: this.register.password,
+        })
+        .catch((err) => {
+            this.errorMessage = err.response.data.message,
+            this.dialog = false
+
+        });
+        if(this.dialog==true)this.$router.replace("/login");
     },
   },
 };

@@ -44,6 +44,7 @@ namespace SignalRServer.Hubs
             {
                 await Clients.Client(connection.ConnectionId).SendAsync("ReciveMessage", message,Context.User.Identity.Name);
             }
+            await _userService.AddMessage(Context.User.Identity.Name, message, receiverId.ToString());
             //await Clients.Client(Context.ConnectionId).SendAsync("ReciveMessage", message);
         }
 

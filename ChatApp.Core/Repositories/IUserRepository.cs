@@ -10,6 +10,7 @@ namespace ChatApp.Core.Repositories
     {
         Task<User> GetAsync(Guid id);
         Task<User> GetAsync(string name);
+        Task<User> GetByEmailAsync(string name);
         Task<IEnumerable<User>> BrowseAsync(string name = "");
 
         Task AddAsync(User user);
