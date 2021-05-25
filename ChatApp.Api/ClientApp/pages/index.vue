@@ -202,8 +202,9 @@ export default {
           isRecived: true,
         };
         this.messages.push(messageObj);
-        this.users[messageObj.user].isChatActive=true;
-        console.log(res);
+        this.users.forEach(user => {if(user.id==messageObj.user)user.isChatActive=true; })
+       // var index= users.filter(function (item , index)){item.id==messageObj.user return index},
+      //  this.users[index].isChatActive=true;
       });
     },
     getUsers: async function () {
