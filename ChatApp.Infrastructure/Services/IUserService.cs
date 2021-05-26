@@ -26,6 +26,9 @@ namespace ChatApp.Infrastructure.Services
         Task AddPhotoAsync(string path, Guid id, IFormFile photo);
         Task SetChatStatus(string Id,Guid userId);
         Task RemoveConnection(string connectionId);
-        
+        Task AddFriendToList(Guid userId, Guid friendId);
+        Task RemoveFriendFromList(Guid userId, Guid friendId);
+
+
     }
 }

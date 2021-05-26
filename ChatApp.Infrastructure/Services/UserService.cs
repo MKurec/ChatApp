@@ -34,8 +34,6 @@ namespace ChatApp.Infrastructure.Services
             var @thisuser = await _userRepository.GetAsync(userId);
             if (thisuser == null) throw new Exception($"User with id : {userId} dosen't exist");
             var @activeChats = thisuser.ActiveChats.AsEnumerable();
-            //var jointusers = users.Join(@activeChats, User => User.Id.ToString(), ActiveChat => ActiveChat.UserId, (User, ActiveChat) =>
-            //                        new { User.Id, User.Name, User.Email,ActiveChat=ActiveChat.IsActiv ==null ? false : ActiveChat.IsActiv });
             IEnumerable<AccountDto> jointusers = (from user in users
                              join activeChat in activeChats on user.Id.ToString() equals activeChat.UserId into gr
                              from output in gr.DefaultIfEmpty()
@@ -52,7 +50,6 @@ namespace ChatApp.Infrastructure.Services
         public async Task<UserDto> GetUserAsync(string connectionId)
         {
             var @users = await _userRepository.BrowseAsync("");
-            // var @user = @users.SingleOrDefault(x => x.Connections.Any(x => x.ConnectionId == connectionId) != false);
             var @user = @users.FirstOrDefault().Connections.Any(x => x.ConnectionId == connectionId);
             if (users != null) throw new Exception($"No users with '{connectionId}' in database");
             return _mapper.Map<UserDto>(@user);
@@ -177,6 +174,41 @@ namespace ChatApp.Infrastructure.Services
             await _fileRepository.AddAsync(productImage, path, user.Id);
             user.SetImageLocation(Path.Combine(path + "\\uploads\\" + user.Id + ".png"));
             await _userRepository.UpdateAsync(@user);
+        }
+
+        public async Task AddFriendToList(Guid userId,Guid friendId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            var @friend = await _userRepository.GetAsync(friendId);
+            if (friend == null) throw new Exception($"Friend with id {friendId} doesn't exist ");
+            if (user.UserFriends.Contains(friend)) throw new Exception($"{friend.Name} is already on your Friends list");
+            if(user.UnconfirmedFriends.Contains(@friend))
+            {
+                user.RemoveFromUnconfirmedFriends(friend);
+                user.AddFriend(friend);
+                if (friend.UserFriends.Contains(user)) throw new Exception($"You are already on {user.Name} Friends list");
+                friend.AddFriend(user);
+            }
+            else
+            {
+                if (friend.UnconfirmedFriends.Contains(user)) throw new Exception($"{friend.Name} is alredy waiting to confirm your invitation ");
+                friend.AddFriendForConfirmation(user);
+            }
+            await _userRepository.UpdateAsync(@user);
+            await _userRepository.UpdateAsync(@friend);
+        }
+
+        public async Task RemoveFriendFromList(Guid userId, Guid friendId)
+        {
+            var @user = await _userRepository.GetAsync(userId);
+            var @friend = await _userRepository.GetAsync(friendId);
+            if (friend == null) throw new Exception($"Friend with id {friendId} doesn't exist ");
+            if (!user.UserFriends.Contains(friend)) throw new Exception($"Your Friends list doesn't contain {friend.Name} with id {friend.Id}");
+            @user.UserFriends.Remove(@friend);
+            @friend.RemoveFriendFromFriends(@user);
+            await _userRepository.UpdateAsync(@user);
+            await _userRepository.UpdateAsync(@friend);
+
         }
     }
 }

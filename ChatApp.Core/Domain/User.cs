@@ -16,6 +16,8 @@ namespace ChatApp.Core.Domain
         public ICollection<Message> Messages { get; protected set; }
         public string? ImageLocation { get; protected set; }
         public ICollection<ActiveChat> ActiveChats { get; protected set; }
+        public ICollection<User> UserFriends { get; protected set; }
+        public ICollection<User> UnconfirmedFriends { get; protected set; }
 
         protected User() { }
 
@@ -89,6 +91,50 @@ namespace ChatApp.Core.Domain
                 throw new Exception($"User with id : '{this.Id}' can not have empty image location");
             }
             ImageLocation = imageLocation;
+        }
+
+        public void AddFriend(User user)
+        {
+            if(user==null)
+            {
+                throw new Exception("Can not add non existing user to Friend's");
+            }
+            if(UserFriends.Contains(user))
+            {
+                throw new Exception($"User {user.Name} with id {user.Id} is alredy on Fiends list");
+            }
+            UserFriends.Add(user);
+        }
+
+        public void RemoveFriendFromFriends(User user)
+        {
+            if (!UserFriends.Contains(user))
+            {
+                throw new Exception($"Cannot remove user {user.Name} from friends list, it does't contains this user ");
+            }
+            UserFriends.Remove(user);
+        }
+        
+        public void AddFriendForConfirmation(User user)
+        {
+            if (user == null)
+            {
+                throw new Exception("Can not add non existing user to Confirmation list");
+            }
+            if (UnconfirmedFriends.Contains(user))
+            {
+                throw new Exception($"User {user.Name} with id {user.Id} is alredy on Confirmation list");
+            }
+            UnconfirmedFriends.Add(user);
+        }
+
+        public void RemoveFromUnconfirmedFriends(User user)
+        {
+            if (!UserFriends.Contains(user))
+            {
+                throw new Exception($"Cannot remove user {user.Name} from friends list, it does't contains this user ");
+            }
+            UserFriends.Remove(user);
         }
 
     }

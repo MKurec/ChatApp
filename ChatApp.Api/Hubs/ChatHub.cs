@@ -48,10 +48,16 @@ namespace SignalRServer.Hubs
             //await Clients.Client(Context.ConnectionId).SendAsync("ReciveMessage", message);
         }
 
-        public async Task JoinRoom(string name)
+        public async Task AddUserToFriends(Guid friendId)
         {
-            Console.WriteLine("User Joined");
-            await Clients.All.SendAsync("JoinRoom", name);
+            Guid userId = new Guid(Context.User.Identity.Name);
+            await _userService.AddFriendToList(userId, friendId);
+            var Connections = await _userService.GetUserConnections(friendId);
+            foreach (ConnectionDto connection in Connections)
+            {
+                await Clients.Client(connection.ConnectionId).SendAsync("RefreshUserList");
+            }
         }
+
     }
 }
