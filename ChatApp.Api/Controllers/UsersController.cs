@@ -40,6 +40,18 @@ namespace ChatApp.Api.Controllers
         {
             return Json(await _userService.BrowseAsync(UserId, name));
         }
+        [HttpGet("Friends")]
+        [Authorize]
+        public async Task<IActionResult> Get(bool a)
+        {
+            return Json(await _userService.BrowseFriendsAsync(UserId));
+        }
+        [HttpGet("Invitations")]
+        [Authorize]
+        public async Task<IActionResult> Get(int a)
+        {
+            return Json(await _userService.BrowseInvitationsAsync(UserId));
+        }
         [HttpPost("register")]
         public async Task<IActionResult> Post([FromBody] RegisterUser command)
         {

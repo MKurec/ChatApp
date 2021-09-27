@@ -41,6 +41,27 @@ namespace ChatApp.Infrastructure.Services
             return jointusers;
         }
 
+        public async Task<IEnumerable<AccountDto>> BrowseFriendsAsync(Guid userId)
+        {
+            var @thisuser = await _userRepository.GetAsync(userId);
+            if (thisuser == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var users = thisuser.UserFriends;
+            var @activeChats = thisuser.ActiveChats.AsEnumerable();
+            IEnumerable<AccountDto> jointusers = (from user in users
+                                                  join activeChat in activeChats on user.Id.ToString() equals activeChat.UserId into gr
+                                                  from output in gr.DefaultIfEmpty()
+                                                  select new AccountDto() { Id = user.Id, Name = user.Name, Email = user.Email, IsChatActive = output?.IsActiv });
+            return jointusers;
+        }
+
+        public async Task<IEnumerable<AccountDto>> BrowseInvitationsAsync(Guid userId)
+        {
+            var @thisuser = await _userRepository.GetAsync(userId);
+            if (thisuser == null) throw new Exception($"User with id : {userId} dosen't exist");
+            var users = thisuser.UnconfirmedFriends;
+            return _mapper.Map<IEnumerable<AccountDto>>(users);
+        }
+
         public async Task<AccountDto> GetAsync(Guid id)
         {
             var account = await _userRepository.GetAsync(id);

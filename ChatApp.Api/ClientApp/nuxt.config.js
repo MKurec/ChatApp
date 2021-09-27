@@ -48,7 +48,7 @@ export default {
     proxy: true
   },
   proxy: {
-    '/api/': { target: 'https://localhost:44387/',pathRewrite: {'^/api/': ''}, changeOrigin: true, secure:false,strictSSL: false }
+    '/api/': { target: 'https://localhost:44368/',pathRewrite: {'^/api/': ''}, changeOrigin: true, secure:false,strictSSL: false }
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
@@ -107,6 +107,6 @@ export default {
     base: '/'
   },
   devServer: {
-    proxy: 'https://localhost:44387/',
+    proxy: 'https://localhost:44368/',
   }
 }

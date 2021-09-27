@@ -46,7 +46,7 @@ namespace ChatApp.Infrastructure.Repositories
 
         public async Task<User> GetAsync(Guid id)
         {
-            var @user = await Task.FromResult(_users.Include(x => x.Connections).Include(x => x.Messages).Include(x => x.ActiveChats).SingleOrDefault(x => x.Id == id));
+            var @user = await Task.FromResult(_users.Include(x => x.Connections).Include(x => x.Messages).Include(x => x.ActiveChats).Include(x => x.UserFriends).Include(x => x.UnconfirmedFriends).SingleOrDefault(x => x.Id == id));
             return user;
         }
 

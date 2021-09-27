@@ -17,6 +17,8 @@ namespace ChatApp.Infrastructure.Services
         Task<IEnumerable<ConnectionDto>> GetUserConnections(Guid userId);
         Task<IEnumerable<MessageDto>> GetUserMessages(Guid userId);
         Task<IEnumerable<ActiveChatDto>> GetUserActiveChats(Guid userId);
+        Task<IEnumerable<AccountDto>> BrowseFriendsAsync(Guid userId);
+        Task<IEnumerable<AccountDto>> BrowseInvitationsAsync(Guid userId);
         Task<FileStream> GetPhotoAsync(Guid id,string path);
 
         Task RegisterAsync(Guid userId, string email, string name, string password);
